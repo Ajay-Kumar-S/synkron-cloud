@@ -1,11 +1,7 @@
 import os
 import asyncio
-from flask import Flask, request
-from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler
-
 from monitoring_engine import MonitoringEngine
-
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
@@ -16,14 +12,12 @@ if not BOT_TOKEN:
 if not CHAT_ID:
     raise ValueError("CHAT_ID environment variable not set")
 
-
 monitor = MonitoringEngine()
 
-app = Flask(__name__)
-telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 
-# ================= TELEGRAM COMMANDS =================
+# ================= COMMANDS =================
 
 async def start(update, context):
     await update.message.reply_text("🚀 SYNKRON Cloud Monitoring Online")
@@ -53,7 +47,7 @@ async def status(update, context):
     await update.message.reply_text("Monitoring service active.")
 
 
-# =============== ALERT CALLBACK ======================
+# ================= ALERT CALLBACK =================
 
 def alert_callback(result):
 
@@ -69,41 +63,23 @@ def alert_callback(result):
         )
 
     asyncio.run(
-        telegram_app.bot.send_message(chat_id=CHAT_ID, text=message)
+        app.bot.send_message(chat_id=CHAT_ID, text=message)
     )
 
 
 monitor.set_alert_callback(alert_callback)
 
 
-# ================= WEBHOOK ===========================
-
-@app.route(f"/{BOT_TOKEN}", methods=["POST"])
-def webhook():
-
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-
-    asyncio.run(telegram_app.process_update(update))
-
-    return "ok"
-
-
-@app.route("/", methods=["GET"])
-def home():
-    return "SYNKRON Cloud Bot Running"
-
-
-# ================= STARTUP ===========================
+# ================= START BOT =================
 
 if __name__ == "__main__":
 
-    telegram_app.add_handler(CommandHandler("start", start))
-    telegram_app.add_handler(CommandHandler("start_monitoring", start_monitoring))
-    telegram_app.add_handler(CommandHandler("stop_monitoring", stop_monitoring))
-    telegram_app.add_handler(CommandHandler("inject", inject))
-    telegram_app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("start_monitoring", start_monitoring))
+    app.add_handler(CommandHandler("stop_monitoring", stop_monitoring))
+    app.add_handler(CommandHandler("inject", inject))
+    app.add_handler(CommandHandler("status", status))
 
-    asyncio.run(telegram_app.initialize())
+    print("🚀 SYNKRON Cloud Bot Running (Long Polling Mode)")
 
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run_polling()
