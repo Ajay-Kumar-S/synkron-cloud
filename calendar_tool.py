@@ -1,3 +1,12 @@
+import os
+import base64
+
+if os.environ.get("GOOGLE_CREDENTIALS"):
+
+    decoded = base64.b64decode(os.environ["GOOGLE_CREDENTIALS"]).decode("utf-8")
+
+    with open("credentials.json", "w") as f:
+        f.write(decoded)
 import datetime
 import os.path
 import pickle
