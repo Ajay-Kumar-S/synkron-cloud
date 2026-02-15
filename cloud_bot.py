@@ -2,6 +2,9 @@ import os
 import asyncio
 from telegram.ext import ApplicationBuilder, CommandHandler
 from monitoring_engine import MonitoringEngine
+from telegram.ext import MessageHandler, filters
+from conversation_engine import process_message
+
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
@@ -47,6 +50,17 @@ async def status(update, context):
     await update.message.reply_text("Monitoring service active.")
 
 
+async def handle_text(update, context):
+    chat_id = update.effective_chat.id
+    message = update.message.text
+
+    response = process_message(chat_id, message)
+
+    if response:
+        await update.message.reply_text(response)
+
+
+
 # ================= ALERT CALLBACK =================
 
 def alert_callback(result):
@@ -79,6 +93,8 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stop_monitoring", stop_monitoring))
     app.add_handler(CommandHandler("inject", inject))
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+
 
     print("🚀 SYNKRON Cloud Bot Running (Long Polling Mode)")
 
