@@ -1,0 +1,7 @@
+token.pickle
+credentials.json
+cloud_env/
+__pycache__/
+*.pyc
+professional_memory/
+*.sqlite3

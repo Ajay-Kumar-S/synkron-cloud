@@ -1,0 +1,9 @@
+{
+    "Elevator not moving": {
+        "drive_fault": 2,
+        "drive fault": 1
+    },
+    "telemetry_event": {
+        "drive_fault": 8
+    }
+}
