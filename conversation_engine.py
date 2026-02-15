@@ -126,12 +126,15 @@ def handle_scheduling(chat_id, message):
 
             d = session["data"]
 
-            event_link = create_event(
-                d["title"],
-                d["datetime"],
-                d["duration"],
-                d["attendees"]
-            )
+            meeting_data = {
+    "title": d["title"],
+    "datetime": d["datetime"],
+    "duration": d["duration"],
+    "attendees": d["attendees"]
+}
+
+event_link = create_event(meeting_data)
+
 
             reset_session(chat_id)
 
