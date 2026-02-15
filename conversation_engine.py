@@ -1,86 +1,3 @@
-import re
-from datetime import datetime
-import dateparser
-from calendar_tool import create_event
-from diagnostic_mode import handle_diagnostic
-
-
-# ==============================
-# USER SESSION STORAGE
-# ==============================
-
-user_sessions = {}
-
-
-def reset_session(chat_id):
-    if chat_id in user_sessions:
-        del user_sessions[chat_id]
-
-
-# ==============================
-# INTENT DETECTION
-# ==============================
-
-def detect_intent(message):
-
-    msg = message.lower()
-
-    if "schedule" in msg or "meeting" in msg:
-        return "scheduling"
-
-    if any(word in msg for word in ["door", "drive", "fault", "blower", "motor"]):
-        return "diagnostic"
-
-    if msg in ["exit", "cancel"]:
-        return "exit"
-
-    return None
-
-
-# ==============================
-# MAIN ROUTER
-# ==============================
-
-def process_message(chat_id, message):
-
-    # If user already in session → continue mode
-    if chat_id in user_sessions:
-        mode = user_sessions[chat_id]["mode"]
-
-        if mode == "scheduling":
-            return handle_scheduling(chat_id, message)
-
-        if mode == "diagnostic":
-            return handle_diagnostic(message)
-
-    # Otherwise detect new intent
-    intent = detect_intent(message)
-
-    if intent == "scheduling":
-        user_sessions[chat_id] = {
-            "mode": "scheduling",
-            "step": "title",
-            "data": {}
-        }
-        return "What is the meeting title?"
-
-    if intent == "diagnostic":
-        user_sessions[chat_id] = {
-            "mode": "diagnostic"
-        }
-        return "Diagnostic mode activated. Describe the issue."
-
-    if intent == "exit":
-        reset_session(chat_id)
-        return "Session closed."
-
-    return "Command not recognized."
-
-
-# ==============================
-# SCHEDULING ENGINE
-# ==============================
-
 def handle_scheduling(chat_id, message):
 
     session = user_sessions[chat_id]
@@ -111,6 +28,7 @@ def handle_scheduling(chat_id, message):
         session["step"] = "confirm"
 
         d = session["data"]
+
         return (
             f"Confirm meeting?\n\n"
             f"Title: {d['title']}\n"
@@ -127,14 +45,13 @@ def handle_scheduling(chat_id, message):
             d = session["data"]
 
             meeting_data = {
-    "title": d["title"],
-    "datetime": d["datetime"],
-    "duration": d["duration"],
-    "attendees": d["attendees"]
-}
+                "title": d["title"],
+                "datetime": d["datetime"],
+                "duration": d["duration"],
+                "attendees": d["attendees"]
+            }
 
-event_link = create_event(meeting_data)
-
+            event_link = create_event(meeting_data)
 
             reset_session(chat_id)
 
