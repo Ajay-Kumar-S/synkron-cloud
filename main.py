@@ -1,7 +1,6 @@
+import os
 from diagnostic_mode import handle_diagnostic
 from telegram_alert import send_telegram_message
-
-print("Advanced Productivity + Diagnostic AI Ready\n")
 
 
 def process_message(user_input):
@@ -20,14 +19,22 @@ def process_message(user_input):
     return "Command not recognized."
 
 
-while True:
+# ===============================
+# LOCAL CLI MODE ONLY
+# ===============================
 
-    user_input = input("You: ")
+if __name__ == "__main__" and not os.environ.get("CLOUD_MODE"):
 
-    if user_input.lower() in ["exit", "quit"]:
-        break
+    print("Advanced Productivity + Diagnostic AI Ready\n")
 
-    response = process_message(user_input)
+    while True:
 
-    if response:
-        print("\nAI:", response)
+        user_input = input("You: ")
+
+        if user_input.lower() in ["exit", "quit"]:
+            break
+
+        response = process_message(user_input)
+
+        if response:
+            print("\nAI:", response)
